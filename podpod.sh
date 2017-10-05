@@ -142,9 +142,9 @@ fi
 PODCASTS_DIR=$(readVariablePath PODCASTS_DIR DIR)
 
 # Log the startup
-lne ""  1
-log ""  1
-log "Starting PodPod at $(date) with"   1
+log ""  0
+log ""  0
+log "Starting PodPod at $(date) with"   0
 log "   RSS_FILE     = $RSS_FILE"       1
 log "   PODCASTS_DIR = $PODCASTS_DIR"   1
 log "   CONFIG_FILE  = $CONFIG_FILE"    1
