@@ -10,6 +10,14 @@ usage()
     echo "  --help                                   Display this help message and exit"
     echo "  --hook [start|cast|file|end] hook.sh     Set up a hook script"
     echo ""
+    echo "  Hooks and their execution times:"
+    echo "    start     after successful startup, before first podcast is checked"
+    echo "    cast      after every successfull complete podcast check"
+    echo "                parameter: directory of successfully retrieved podcast"
+    echo "    file      after every successfully downloaded file"
+    echo "                parameter: downloaded file"
+    echo "    end       after all podcasts are finished"
+    echo ""
 }
 
 # outputs a composed relative path of the first two arguments if the second one
@@ -36,6 +44,7 @@ function readVariablePath() {
         fi
     elif [[ $2 == "FILE" && ! -f ${!1} ]]; then
         echo "$1 '${!1}' could not be read" >> /dev/stderr
+        echo "Before exit" >> /dev/stderr
         exit 7
     elif [[ $2 == "DIR" && ! -d ${!1} ]]; then
         mkdir -p ${!1}
@@ -57,6 +66,14 @@ function log() {
     fi
 }
 
+function die() {
+    if [[ -n $2 ]]; then
+        echo $2
+        usage
+    fi
+    exit $1
+}
+
 ### MAIN SCRIPT ###
 
 echo ""
@@ -73,33 +90,33 @@ HOOK_CAST=""
 HOOK_FILE=""
 HOOK_END=""
 
-OPSSET=0 # Set to 1 if the first options (--... ) is used
 while :
 do
+    # If the first one is empty, we've shifted through every parameter
     if [[ -z $1 ]]; then break; fi
 
     # Check if this parameter is a long option (needed for future work)
+    # Set to 1 if the first options (--... ) is used
+    LONGOPT=0
     if [[ -n $(echo $1 | egrep -- '--.+') ]]; then
-        OPSET=1
+        LONGOPT=1
     fi
 
-    if [[ OPSET -eq 0 && -f $1 ]]; then
+    # The first parameter which is not preceeded by "--" is the config file.
+    if [[ $LONGOPT -eq 0 ]]; then
+        if [[ ! -f $1 ]]; then
+            die 6 "Config file '$1' not found"
+        fi
         CONFIG_FILE=$1
     elif [[ $1 == "--hook" ]]; then
         if [[ -z $2 || -z $3 ]]; then
-            echo "'--hook' requires both a hook specifier and a script"
-            usage
-            exit 1
+            die 1 "'--hook' requires both a hook specifier and a script"
         fi
         if [[ $2 != "start" && $2 != "cast" && $2 != "file" && $2 != "end" ]]; then
-            echo "Cannot specify a hook script for action '$2'"
-            usage
-            exit 2
+            die 2 "Cannot specify a hook script for action '$2'"
         fi
         if [[ ! -x $3 ]]; then
-            echo "'$3' is not a usable executable for hook '$2'"
-            usage
-            exit 3
+            die 3 "'$3' is not a usable executable for hook '$2'"
         fi
         # $1 is hook, $2 is the specifier, $3 is the hook script
         SPECIFIER=$( echo $2 | tr [:lower:] [:upper:] )
@@ -113,9 +130,7 @@ do
 done
 
 if [[ -z $CONFIG_FILE ]]; then
-    echo "Please specify a config file."
-    usage
-    exit 4
+    die 4 "Please specify a config file."
 fi
 CONFIG_DIR=$(dirname $CONFIG_FILE)
 
