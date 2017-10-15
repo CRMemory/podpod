@@ -247,9 +247,11 @@ while read LINE; do
 
     ITEM_LAST_DATE=$( echo "$CHANNEL" | xmllint -xpath "/channel/item[last()]/pubDate/text()" - 2>/dev/null )
 
-    # Iterate over all entrys present and download if needed
+    # Iterate over all entrys present and download if needed. Iterate until the
+    # last element was handled.
+    LAST_REACHED=0
     i=0
-    while [[ $MAX_DLDS -eq -1 || $i -lt $MAX_DLDS ]]
+    while [[ $LAST_REACHED -eq 0 && ( $MAX_DLDS -eq -1 || $i -lt $MAX_DLDS ) ]]
     do
         # Idexing for xmllint (i.e. XPath) starts with 1
         i=$(( $i + 1 ))
@@ -263,6 +265,11 @@ while read LINE; do
         ITEM_I_LOGENTRY="$ITEM_I_UTC:$ITEM_I_URL"
 
 
+        # Continue at most as long a we haven't reached the last item in the list of podcast items
+        if [[ $ITEM_I_DATE == $ITEM_LAST_DATE ]]; then
+            LAST_REACHED=1
+        fi
+
         log "  Ep. $i:'$ITEM_I_TITLE'"
         # Check if the current element has already been logged (and thus downloaded or faked/simulated)
         if [[ -n $(echo $CAST_OLDLOG | grep "$ITEM_I_LOGENTRY") ]]; then
@@ -272,6 +279,8 @@ while read LINE; do
 
         # Compose a filename for the file that (may) will be downloaded
         DATESTRING=$(date  --date="$ITEM_I_DATE" "+$DATE_FORMAT") # This also works if the format string is empty
+        echo "ITEM_I = $ITEM_I_DATE"
+        echo "ITEM_LAST = $ITEM_LAST_DATE"
         DL_FILENAME=$(basename $ITEM_I_URL)
         if [[ -n $DATESTRING ]]; then
             DL_FILENAME="$DATESTRING-$DL_FILENAME"
@@ -293,12 +302,6 @@ while read LINE; do
             bash $HOOK_FILE ${DL_FILENAME}
         fi
         echo "$ITEM_I_LOGENTRY" >> $CAST_LOGFILE
-
-
-        # Continue at most as long a we haven't reached the last item in the list of podcast items
-        if [[ $ITEM_I_DATE == $ITEM_LAST_DATE ]]; then
-            break
-        fi
 
     done # Iteration over every item for one podcast
 
