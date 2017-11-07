@@ -1,7 +1,17 @@
 #!/bin/bash
 
-# Podpod by Clemens Meissner <clemens.meissner[at]posteo.de>
+# Podpod by Clemens Meissner <clemens.meissner[at]web.de>
 # Copyright 2017
+
+# List of die codes, just for easier debugging
+DIE_HOOK_REQ2=1
+DIE_HOOK_NKNOWN=2
+DIE_HOOK_NEXEC=3
+DIE_CONFIG_NSPEC=4
+DIE_CONFIG_NOTFOUND=6
+DIE_POD_NNAME=7
+DIE_POD_NURL=8
+DIE_POD_NMODE=9
 
 usage()
 {
@@ -17,6 +27,8 @@ usage()
     echo "    file      after every successfully downloaded file"
     echo "                parameter: downloaded file"
     echo "    end       after all podcasts are finished"
+    echo ""
+    echo "[RETURN] 0 on success, >0 if any error happens"
     echo ""
 }
 
@@ -55,6 +67,9 @@ function readVariablePath() {
     echo ${!1}
 }
 
+# Log to the logfile (inferred from script) and (optionally) to stdout
+# $1 - Log-message
+# $2 - if set and nonzero -> don't log to stdout
 function log() {
     # If the second parameter is set to nonzero, only log to file
     if [[ -z $2 || $2 -eq 0 ]]; then
@@ -66,6 +81,9 @@ function log() {
     fi
 }
 
+# Exit with error code, optionally print error message
+# $1 - exit code
+# $2 - error message, might be empty
 function die() {
     if [[ -n $2 ]]; then
         echo $2
@@ -90,6 +108,7 @@ HOOK_CAST=""
 HOOK_FILE=""
 HOOK_END=""
 
+# Read the command line parameters
 while :
 do
     # If the first one is empty, we've shifted through every parameter
@@ -105,18 +124,18 @@ do
     # The first parameter which is not preceeded by "--" is the config file.
     if [[ $LONGOPT -eq 0 ]]; then
         if [[ ! -f $1 ]]; then
-            die 6 "Config file '$1' not found"
+            die $DIE_CONFIG_NFOUND "Config file '$1' not found"
         fi
         CONFIG_FILE=$1
     elif [[ $1 == "--hook" ]]; then
         if [[ -z $2 || -z $3 ]]; then
-            die 1 "'--hook' requires both a hook specifier and a script"
+            die $DIE_HOOK_REQ2 "'--hook' requires both a hook specifier and a script"
         fi
         if [[ $2 != "start" && $2 != "cast" && $2 != "file" && $2 != "end" ]]; then
-            die 2 "Cannot specify a hook script for action '$2'"
+            die $DIE_HOOK_NKNOWN "Cannot specify a hook script for action '$2'"
         fi
         if [[ ! -x $3 ]]; then
-            die 3 "'$3' is not a usable executable for hook '$2'"
+            die $DIE_HOOK_NEXEC "'$3' is not a usable executable for hook '$2'"
         fi
         # $1 is hook, $2 is the specifier, $3 is the hook script
         SPECIFIER=$( echo $2 | tr [:lower:] [:upper:] )
@@ -130,7 +149,7 @@ do
 done
 
 if [[ -z $CONFIG_FILE ]]; then
-    die 4 "Please specify a config file."
+    die $DIE_CONFIG_NSPEC "Please specify a config file."
 fi
 CONFIG_DIR=$(dirname $CONFIG_FILE)
 
@@ -172,10 +191,15 @@ log "   HOOK_END = $HOOK_END"           1
 
 ## Execute the start hook script as all config tests are done.
 if [[ -x $HOOK_START ]]; then
+    log "Calling 'start' hook $HOOK_START"
     bash $HOOK_START
 fi
 
-# Iterate over every entry of the RSS file.
+# Read the RSS file
+# ToDo: This should be restructured:
+#   1) Read the podcast list (and file errors)
+#   2) Work along all the possible podcasts
+# or at least extract some functions here. This is ugly
 while read LINE; do
 
     # Ignore blank lines and lines starting with '#'
@@ -185,6 +209,14 @@ while read LINE; do
     NAME=$( echo $LINE | cut -d' ' -f 1 )
     URL=$(  echo $LINE | cut -d' ' -f 2 )
     MODE=$( echo $LINE | cut -d' ' -f 3 )
+
+    if [[ -z $NAME ]]; then
+        die $DIE_POD_NNAME "No podcast name given"
+    elif [[ -z $URL ]]; then
+        die $DIE_POD_NURL "No podcast URL given for podcast '$NAME'"
+    elif [[ -z $MODE ]]; then
+        die $DIE_POD_NMODE "No download mode given for podcast '$NAME'"
+    fi
 
     ## Check the modes.
     MAX_DLDS="-1"
