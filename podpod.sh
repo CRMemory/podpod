@@ -94,8 +94,6 @@ function die() {
 
 ### MAIN SCRIPT ###
 
-echo ""
-
 if [[ -n $( echo $@ | grep -- "--help" ) ]]
 then
     usage
@@ -178,7 +176,8 @@ PODCASTS_DIR=$(readVariablePath PODCASTS_DIR DIR)
 # Log the startup
 log ""  0
 log ""  0
-log "Starting PodPod at $(date) with"   0
+log "Starting PodPod at $(date)"        0
+log " with:"                            1
 log "   RSS_FILE     = $RSS_FILE"       1
 log "   PODCASTS_DIR = $PODCASTS_DIR"   1
 log "   CONFIG_FILE  = $CONFIG_FILE"    1
@@ -187,11 +186,11 @@ log "   HOOK_START   = $HOOK_START"     1
 log "   HOOK_CAST    = $HOOK_CAST"      1
 log "   HOOK_FILE = $HOOK_FILE"         1
 log "   HOOK_END = $HOOK_END"           1
-
+log "" 0
 
 ## Execute the start hook script as all config tests are done.
 if [[ -x $HOOK_START ]]; then
-    log "Calling 'start' hook $HOOK_START"
+    log "Calling 'start' hook '$HOOK_START'" 1
     bash $HOOK_START
 fi
 
@@ -331,6 +330,7 @@ while read LINE; do
         fi
 
         if [[ -x $HOOK_FILE ]]; then
+            log "Executing 'file' hook '$HOOK_FILE' after podcast '$CAST_DIR' episode from $ITEM_I_DATE" 1
             bash $HOOK_FILE ${DL_FILENAME}
         fi
         echo "$ITEM_I_LOGENTRY" >> $CAST_LOGFILE
@@ -338,11 +338,15 @@ while read LINE; do
     done # Iteration over every item for one podcast
 
     if [[ -x $HOOK_CAST ]]; then
+        log "Executing 'cast' hook '$HOOK_CAST' after podcast '$CAST_DIR'" 1
         bash $HOOK_CAST ${CAST_DIR}
     fi
 
 done < $RSS_FILE # Iteration over every RSSFILE entry
 
 if [[ -x $HOOK_END ]]; then
+    log "Executing hook '$HOOK_END' at very end" 1
     bash $HOOK_END
 fi
+
+exit 0
