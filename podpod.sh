@@ -258,7 +258,7 @@ while read LINE; do
     CAST_OLDLOG=$( cat $CAST_LOGFILE )
 
     # Aqcuire podcast xml file
-    wget -q $URL -O $CAST_XMLFILE
+    wget -q --show-progress $URL -O $CAST_XMLFILE
     retVal=$?
     if [[ $retVal -ne 0 ]]; then
         if [[ $retVal -eq 4 ]]; then
@@ -319,7 +319,7 @@ while read LINE; do
 
         # Only download if not simulate
         if [[ "$MODE" != "sim" ]]; then
-            wget $ITEM_I_URL -O "$CAST_DIR/$DL_FILENAME"
+            wget -q --show-progress $ITEM_I_URL -O "$CAST_DIR/$DL_FILENAME"
 #            touch ${CAST_DIR}/${DL_FILENAME}
             if [[ $? -eq 0 ]]; then
                 log "    ... acquired"
