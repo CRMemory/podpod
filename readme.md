@@ -19,8 +19,9 @@ free to drop me a message.
 # Usage
 
 You'll need two files:
-* ` podpod.conf ` - Configuration file.
-* ` podcastList.txt ` - List of podcast URLs to check
+
+* `podpod.conf` - Configuration file.
+* `podcastList.txt` - List of podcast URLs to check
 
 The latter one is set in the first one as variable `RSS_FILE`, see below.
 
@@ -46,27 +47,29 @@ are not read. The general format for an entry entry is as follows:
     <title> <url> <mode>
 
 where
-- <title>     Title of the podcast, will be the name of the directory under
-              `PODCAST_DIR`
-- <url>       Url to the xml of the podcast feed
-- <mode>      Either sim, all, latest or <n> (see below)
+
+- `title` - Title of the podcast, will be the name of the directory under
+            `PODCAST_DIR`
+- `url`   - Url to the xml of the podcast feed
+- `mode`  - Either sim, all, latest or <n> (see below)
 
 The possible modes are
-- sim     Simulate the download. This will log the according podcast as
-          'was downloaded' but neither download something nor create a file.
-          This basically keeps a log of all URLs of all files that could've
-          been downloaded.
-          Note that once an episode was 'was downloaded' it will not be
-          checked again unless the according entry from the logfile is removed.
-          Note that using the 'sim' mode also allows giving a number as argument.
 
-- all     Check and download all episodes/files that have not been acquired yet.
+- `sim`    - Simulate the download. This will log the according podcast as
+             'was downloaded' but neither download something nor create a file.
+             This basically keeps a log of all URLs of all files that could've
+             been downloaded.
+             Note that once an episode was 'was downloaded' it will not be
+             checked again unless the according entry from the logfile is removed.
+             Note that using the 'sim' mode also allows giving a number as argument.
 
-- latest  Check and download the latest episode only and don't check for any
-          other. This is equivalent to setting the mode to the number 1
+- `all`    - Check and download all episodes/files that have not been acquired yet.
 
-- <n>     A non-negative integer value. Check and download the newest <n>
-          episodes only. A value of 1 is equivalent to setting 'latest'
+- `latest` - Check and download the latest episode only and don't check for any
+             other. This is equivalent to setting the mode to the number 1
+
+- `<n>`    - A non-negative integer value. Check and download the newest <n>
+             episodes only. A value of 1 is equivalent to setting 'latest'
 
 ## Hooks
 
