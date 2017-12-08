@@ -312,14 +312,14 @@ while read LINE; do
         DATESTRING=$(date  --date="$ITEM_I_DATE" "+$DATE_FORMAT") # This also works if the format string is empty
         echo "ITEM_I = $ITEM_I_DATE"
         echo "ITEM_LAST = $ITEM_LAST_DATE"
-        DL_FILENAME=$(basename $ITEM_I_URL)
+        DL_FILENAME=$(basename "$ITEM_I_URL")
         if [[ -n $DATESTRING ]]; then
             DL_FILENAME="$DATESTRING-$DL_FILENAME"
         fi
 
         # Only download if not simulate
         if [[ "$MODE" != "sim" ]]; then
-            wget -q --show-progress $ITEM_I_URL -O "$CAST_DIR/$DL_FILENAME"
+            wget -q --show-progress "$ITEM_I_URL" -O "$CAST_DIR/$DL_FILENAME"
 #            touch ${CAST_DIR}/${DL_FILENAME}
             if [[ $? -eq 0 ]]; then
                 log "    ... acquired"
