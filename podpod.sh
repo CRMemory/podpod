@@ -350,3 +350,4 @@ if [[ -x $HOOK_END ]]; then
 fi
 
 exit 0
+
