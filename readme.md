@@ -36,6 +36,9 @@ The file `podpod.conf` must be provided as parameter when calling `podpod.sh`.
 
     ./podpod.sh podpod.conf
 
+If no configuration file is given, the default location ~/.podpod.conf will
+be used. If not present processing stops.
+
 ## RSS file
 
 This file (podpodList.txt in the example) specifies which podcasts should be
@@ -73,7 +76,21 @@ The possible modes are
 
 ## Hooks
 
-(To be added)
+Hooks are small scripts that add further postprocessing. There are four kinds of
+hooks enabled. A hook can be set by providing `--hook <type> <script>` as option
+to `podpod.sh` (Later there will be the option to set these values in the config
+directly)
+Any number of hooks can be provided. If the same hook is present multiple times,
+the last one provided will be used. If set in the config file and the command
+line, the command line parameters are preferred.
+
+- `start` - Executed before any podcasts are processed. No argument.
+- `file`  - Executed after any file has been downloaded. Argument: Full path to
+            the file just processed
+- `cast`  - Executed after a podcast is finished. Argument: Full path to the
+            directory corresponding to the finished podcast. Note that this means
+- `end`   - Executed after all podcasts are processed. Argument: Full path to
+            the podcast directory
 
 # Ideas for the future aka ToDos
 - LICENSE
@@ -88,4 +105,5 @@ The possible modes are
 - TRY_INTERPRETATION
   - try interpretation of names and such
   - use itunes-tags if present (maybe also for renaming)
-
+- Also allow settings Hooks via config script
+- Set a default location to search for the config like ~/.podpod.conf or something alike
