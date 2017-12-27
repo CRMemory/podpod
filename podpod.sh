@@ -147,7 +147,13 @@ do
 done
 
 if [[ -z $CONFIG_FILE ]]; then
-    die $DIE_CONFIG_NSPEC "Please specify a config file."
+    # Try to read a default location
+    CONFIG_FILE=$(readlink -f ~/.podpod.conf)
+    if [[ -f $CONFIG_FILE ]]; then
+        echo "Used default config file at $CONFIG_FILE"
+    else
+        die $DIE_CONFIG_NSPEC "Please specify a config file."
+    fi
 fi
 CONFIG_DIR=$(dirname $CONFIG_FILE)
 
@@ -346,7 +352,7 @@ done < $RSS_FILE # Iteration over every RSSFILE entry
 
 if [[ -x $HOOK_END ]]; then
     log "Executing hook '$HOOK_END' at very end" 1
-    bash $HOOK_END
+    bash $HOOK_END ${PODCAST_DIR}
 fi
 
 exit 0
