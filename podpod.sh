@@ -316,8 +316,8 @@ while read LINE; do
 
         # Compose a filename for the file that (may) will be downloaded
         DATESTRING=$(date  --date="$ITEM_I_DATE" "+$DATE_FORMAT") # This also works if the format string is empty
-        echo "ITEM_I = $ITEM_I_DATE"
-        echo "ITEM_LAST = $ITEM_LAST_DATE"
+#        echo "ITEM_I = $ITEM_I_DATE"
+#        echo "ITEM_LAST = $ITEM_LAST_DATE"
         DL_FILENAME=$(basename "$ITEM_I_URL")
         if [[ -n $DATESTRING ]]; then
             DL_FILENAME="$DATESTRING-$DL_FILENAME"
